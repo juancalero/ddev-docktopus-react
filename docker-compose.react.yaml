@@ -1,0 +1,29 @@
+# React (Vite dev server) service for DDEV (from the docktopus stack).
+#ddev-generated
+#
+# Serves the code in the project's frontend_react/ directory (scaffolded on
+# install if missing). Exposed through the ddev-router at:
+#   http://<project>.ddev.site:15173   (configurable via REACT_HTTP_PORT)
+# Also available: ddev frontend
+
+services:
+  react:
+    container_name: ddev-${DDEV_SITENAME}-react
+    image: node:22
+    working_dir: /app
+    volumes:
+      - ../frontend_react:/app:cached
+    command: bash -c "if [ ! -d node_modules ]; then npm install --no-audit --no-fund; fi && npx vite --host 0.0.0.0"
+    environment:
+      # Used by the scaffold's vite.config.js for allowedHosts and the
+      # Drupal proxy target.
+      - DDEV_PROJECT_NAME=${DDEV_SITENAME}
+      - VIRTUAL_HOST=${DDEV_HOSTNAME}
+      - HTTP_EXPOSE=${REACT_HTTP_PORT:-15173}:5173
+    expose:
+      - 5173
+    networks:
+      - ddev_default
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT

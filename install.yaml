@@ -1,0 +1,178 @@
+name: ddev-docktopus-react
+
+ddev_version_constraint: '>= v1.24.10'
+
+project_files:
+  - docker-compose.react.yaml
+  - commands/host/frontend
+
+post_install_actions:
+  - |
+    #ddev-description:Make the host command executable
+    chmod +x commands/host/frontend 2>/dev/null || true
+  - |
+    #ddev-description:Scaffold the frontend_react/ directory if the project has none
+    if [ ! -f ../frontend_react/package.json ]; then
+      mkdir -p ../frontend_react/src
+      cat > ../frontend_react/package.json <<'EOF'
+    {
+      "#ddev-generated": true,
+      "name": "frontend_react",
+      "private": true,
+      "version": "0.0.0",
+      "type": "module",
+      "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+      },
+      "dependencies": {
+        "react": "^19.2.7",
+        "react-dom": "^19.2.7"
+      },
+      "devDependencies": {
+        "@types/react": "^19.0.10",
+        "@types/react-dom": "^19.0.4",
+        "@vitejs/plugin-react": "^5.2.0",
+        "dotenv": "^16.5.0",
+        "vite": "^7.3.5"
+      }
+    }
+    EOF
+      cat > ../frontend_react/vite.config.js <<'EOF'
+    // frontend_react/vite.config.js
+    // #ddev-generated: If you want to edit and own this file, remove this line.
+    import { defineConfig } from 'vite'
+    import react from '@vitejs/plugin-react'
+    import dotenv from 'dotenv'
+
+    dotenv.config()
+
+    const projectName = process.env.DDEV_PROJECT_NAME || 'localhost'
+
+    export default defineConfig({
+      define: {
+        'process.env.DDEV_PROJECT': JSON.stringify(projectName),
+      },
+      plugins: [react()],
+      server: {
+        host: '0.0.0.0',
+        port: 5173,
+        proxy: {
+          // Drupal JSON:API through the Vite dev server.
+          '/jsonapi': {
+            target: `http://${projectName}.ddev.site`,
+            changeOrigin: true,
+            configure: (proxy) => {
+              proxy.on('proxyRes', (proxyRes, req, res) => {
+                res.setHeader('Access-Control-Allow-Origin', '*')
+                res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+                res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+              })
+            },
+          },
+          // Node API from ddev-docktopus-node-api, if installed.
+          '/api': {
+            target: 'http://node:3000',
+            changeOrigin: true,
+          },
+        },
+        origin: `http://${projectName}.ddev.site`,
+        allowedHosts: [`${projectName}.ddev.site`],
+        watch: {
+          usePolling: true,
+        },
+      },
+    })
+    EOF
+      cat > ../frontend_react/index.html <<'EOF'
+    <!doctype html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Vite + React</title>
+      </head>
+      <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.jsx"></script>
+      </body>
+    </html>
+    EOF
+      cat > ../frontend_react/src/main.jsx <<'EOF'
+    // frontend_react/src/main.jsx
+    // #ddev-generated: If you want to edit and own this file, remove this line.
+    import { StrictMode } from 'react'
+    import { createRoot } from 'react-dom/client'
+    import './index.css'
+    import App from './App.jsx'
+
+    createRoot(document.getElementById('root')).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+    EOF
+      cat > ../frontend_react/src/App.jsx <<'EOF'
+    // frontend_react/src/App.jsx
+    // #ddev-generated: If you want to edit and own this file, remove this line.
+    import { useEffect, useState } from 'react'
+
+    export default function App() {
+      const [message, setMessage] = useState('Cargando…')
+      const [users, setUsers] = useState([])
+
+      useEffect(() => {
+        // Node API served by ddev-docktopus-node-api (proxied to /api).
+        fetch('/hello')
+          .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+          .then((d) => setMessage(d.message))
+          .catch(() => setMessage('API Node no disponible (instala ddev-docktopus-node-api)'))
+
+        fetch('/api/users')
+          .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+          .then(setUsers)
+          .catch(() => setUsers([]))
+      }, [])
+
+      return (
+        <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+          <h1>Docktopus + React</h1>
+          <p>{message}</p>
+          {users.length > 0 && (
+            <ul>
+              {users.map((u) => (
+                <li key={u.id}>{u.name} — {u.email}</li>
+              ))}
+            </ul>
+          )}
+        </main>
+      )
+    }
+    EOF
+      cat > ../frontend_react/src/index.css <<'EOF'
+    /* frontend_react/src/index.css */
+    /* #ddev-generated: If you want to edit and own this file, remove this line. */
+    body {
+      margin: 0;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    EOF
+      cat > ../frontend_react/.gitignore <<'EOF'
+    # #ddev-generated: If you want to edit and own this file, remove this line.
+    node_modules/
+    dist/
+    .env
+    EOF
+      echo "ddev-docktopus-react: created frontend_react/ scaffold (React 19 + Vite 7)."
+    else
+      echo "ddev-docktopus-react: existing frontend_react/ directory left untouched."
+    fi
+
+removal_actions:
+  - |
+    #ddev-description:Remove the generated frontend_react/ scaffold if unmodified
+    if [ -f ../frontend_react/package.json ] && grep -q '#ddev-generated' ../frontend_react/package.json; then
+      rm -rf ../frontend_react
+    fi
