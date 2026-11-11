@@ -20,18 +20,19 @@ The first `ddev start` runs `npm install` inside the container (skipped if `node
 | | URL |
 | --- | --- |
 | Host | `http://<project>.ddev.site:15173` — also `ddev frontend` |
+| Host (HTTPS) | `https://<project>.ddev.site:15174` |
 
 The scaffold's `vite.config.js`:
 
 - Proxies `/jsonapi/*` to `http://<project>.ddev.site` (Drupal JSON:API, with CORS headers).
-- Proxies `/api/*` to `http://node:3000` (Node API from `ddev-docktopus-node-api`, if installed).
+- Proxies `/api/*` and `/hello` to `http://node:3000` (Node API from `ddev-docktopus-node-api`, if installed).
 - Uses polling file watch (needed with Mutagen on Windows/macOS).
 
 For a production build run `npm run build` as usual (locally or with `ddev exec -s react npm run build`).
 
 ## Configuration
 
-Change the router port with `REACT_HTTP_PORT` (default `15173`) in `.ddev/.env.ddev-docktopus-react` (create it if needed).
+Change the router ports in `.ddev/.env.ddev-docktopus-react`: `REACT_HTTP_PORT` (default `15173`) and `REACT_HTTPS_PORT` (default `15174`).
 
 ## Uninstallation
 

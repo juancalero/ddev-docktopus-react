@@ -5,4 +5,8 @@
 ## Usage: frontend
 ## Example: "ddev frontend"
 
-ddev launch :15173
+if [ ${DDEV_PRIMARY_URL%://*} = "http" ]; then
+    ddev launch :15173
+else
+    ddev launch :15174
+fi
