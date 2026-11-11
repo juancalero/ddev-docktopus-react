@@ -1,3 +1,6 @@
+[![tests](https://github.com/juancalero/ddev-docktopus-react/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/juancalero/ddev-docktopus-react/actions/workflows/tests.yml)
+[![release](https://img.shields.io/github/v/release/juancalero/ddev-docktopus-react)](https://github.com/juancalero/ddev-docktopus-react/releases/latest)
+
 # DDEV Docktopus React
 
 React 19 + [Vite 7](https://vite.dev/) dev-server service for DDEV, taken from the [docktopus](https://github.com/juancalero/docktopus) stack, for decoupled or hybrid Drupal frontends.
@@ -19,7 +22,7 @@ The first `ddev start` runs `npm install` inside the container (skipped if `node
 
 | | URL |
 | --- | --- |
-| Host | `http://<project>.ddev.site:15173` — also `ddev frontend` |
+| Host (HTTP) | `http://<project>.ddev.site:15173` — also `ddev frontend` |
 | Host (HTTPS) | `https://<project>.ddev.site:15174` |
 
 The scaffold's `vite.config.js`:
@@ -28,11 +31,18 @@ The scaffold's `vite.config.js`:
 - Proxies `/api/*` and `/hello` to `http://node:3000` (Node API from `ddev-docktopus-node-api`, if installed).
 - Uses polling file watch (needed with Mutagen on Windows/macOS).
 
+The scaffolded files carry a `#ddev-generated` marker; edit them freely and the add-on will respect your changes (re-running the install leaves them untouched).
+
 For a production build run `npm run build` as usual (locally or with `ddev exec -s react npm run build`).
 
 ## Configuration
 
-Change the router ports in `.ddev/.env.ddev-docktopus-react`: `REACT_HTTP_PORT` (default `15173`) and `REACT_HTTPS_PORT` (default `15174`).
+Router ports are set in `.ddev/.env.ddev-docktopus-react`:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `REACT_HTTP_PORT` | `15173` | Router port for the HTTP UI |
+| `REACT_HTTPS_PORT` | `15174` | Router port for the HTTPS UI |
 
 ## Uninstallation
 
